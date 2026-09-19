@@ -3,16 +3,13 @@ from features import extract_features
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
-import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
-
+import matplotlib.pyplot as plt
 
 def process_recording(file_path):
     data = scipy.io.loadmat(file_path)
     de_key = [key for key in data.keys() if key.endswith("_DE_time")][0]
     vibration = data[de_key].ravel()
-    print(vibration.shape)
     fs = 12000
     window_size = 0.1
     samples_per_window = int(window_size * fs)
@@ -69,15 +66,6 @@ for file_path in files:
     kurtosis_all.extend(kurtosis)
     labels_all.extend(labels)
     recordings_all.extend(recordings)
-  
-
-print(len(rms_all))
-print(len(peak_all))
-print(len(kurtosis_all))
-print(len(labels_all))
-print(len(recordings_all))
-print(recordings_all[:5])
-
 
 
 df=pd.DataFrame({
@@ -101,40 +89,11 @@ y_train = train_df["Label"]
 X_test = test_df[features]
 y_test = test_df["Label"]
 
-model = LogisticRegression()
-model.fit(X_train, y_train)
-
-y_pred = model.predict(X_test)
-
-accuracy = accuracy_score(y_test, y_pred)
-print("Accuracy:", accuracy)
-
-cm = confusion_matrix(y_test, y_pred)
-
-print(cm)
-
-probabilities = model.predict_proba(X_test)
-
-print(probabilities[:10])
-
-wrong = (y_test.values == 0) & (y_pred == 1)
-
-
-print(test_df.loc[wrong, ["RMS", "Peak", "Kurtosis", "Recording"]])
-print(model.coef_)
-print(model.intercept_)
-
-healthy = df[df["Label"] == 0]
-faulty = df[df["Label"] == 1]
-
-p_faulty = probabilities[:, 1]
-
-
 scaler = StandardScaler()
 scaler.fit(X_train)
 X_train_scaled = scaler.transform(X_train)
 X_test_scaled = scaler.transform(X_test)
-print(X_train_scaled[:3])
+
 
 scaled_model = LogisticRegression()
 scaled_model.fit(X_train_scaled, y_train)
@@ -149,7 +108,7 @@ print(classification_report(
     y_pred_scaled,
     target_names=["Healthy", "Faulty"]
 ))
-import matplotlib.pyplot as plt
+
 
 plt.scatter(
     df[df["Label"] == 0]["RMS"],
